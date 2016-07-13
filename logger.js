@@ -49,7 +49,7 @@ function getClazz(module) {
     if (module) {
         if (module.id) {
             if (module.id == '.') {
-                return "[pintu] "
+                return "[yrw] "
             }
             return "[" + path.basename(module.id) + "] ";
         } else {

@@ -36,6 +36,14 @@ block body
                   each art in hotArticles
                     li.item-art
                       a.link(href=portalUrl+'/a/'+art.order+'.html') #{art.title}
+            //- 友情链接
+            if _.size(friendLinks)
+              .friend-link
+                .title.t-c 友情链接
+                ul.list
+                  each item in friendLinks
+                    li.item-l
+                      a.link(href="#{item.link}", target="_blank") #{item.name}
     .footer
       +footer()
 block scripts

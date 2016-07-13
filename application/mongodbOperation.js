@@ -1,6 +1,5 @@
-var async = require('async');
 var logger = require("../logger").getLogger(module);
-var util = require('util')
+var util = require('util');
 
 /**
  * mongo查询分页封装
@@ -14,166 +13,149 @@ var util = require('util')
  * @param fields
  * @param query
  * @param options
- * @param callback
  */
-exports.mongoQueryPage = mongoQueryPage = function (model, query, fields, options, callback) {
-    async.auto({
-        count: function (cb) {
-            count(model, query, cb)
-        },
-        getData: function (cb) {
-            find(model, query, fields, options, cb);
-        }
-    }, function (err, results) {
-        if (err) return callback(err);
-        callback(null, {total: results.count, data: results.getData});
-    })
-}
+exports.mongoQueryPage = mongoQueryPage = function *(model, query, fields, options) {
+    return yield {
+        total: count(model, query),
+        data: find(model, query, fields, options)
+    };
+};
 
 /**
  * count
  * @type {Function}
  */
-exports.count = count = function (model, query, callback) {
-    model.count(query, warpCallback(callback, [model.modelName, 'count', query]));
-}
+exports.count = count = function *(model, query) {
+    var data = yield model.count(query);
+    dbLog([model.modelName, 'count', query]);
+    return data;
+};
 
 /**
  * findOne
  * @type {Function}
  */
-exports.findOne = findOne = function (model, query, fields, options, callback) {
-    if ('function' == typeof options) {
-        callback = options;
-        options = null;
-    } else if ('function' == typeof fields) {
-        callback = fields;
-        fields = null;
-        options = null;
-    } else if ('function' == typeof query) {
-        callback = query;
-        query = {};
-        fields = null;
-        options = null;
-    }
-    model.findOne(query, fields, options, warpCallback(callback, [model.modelName, 'findOne', query, fields, options]));
-}
+exports.findOne = findOne = function *(model, query, fields, options) {
+    var data = yield model.findOne(query, fields, options);
+    dbLog([model.modelName, 'findOne', query, fields, options]);
+    return data;
+};
 
 /**
  * findById
  * @type {Function}
  */
-exports.findById = findById = function (model, id, fields, options, callback) {
-    findOne(model, {_id: id}, fields, options, callback)
-}
+exports.findById = findById = function *(model, id, fields, options) {
+    return yield findOne(model, {_id: id}, fields, options)
+};
 
 /**
  * find
  * @type {Function}
  */
-exports.find = find = function (model, query, fields, options, callback) {
-    if ('function' == typeof query) {
-        callback = query;
-        query = {};
-        fields = null;
-        options = null;
-    } else if ('function' == typeof fields) {
-        callback = fields;
-        fields = null;
-        options = null;
-    } else if ('function' == typeof options) {
-        callback = options;
-        options = null;
-    }
-    model.find(query, fields, options, warpCallback(callback, [model.modelName, 'find', query, fields, options]));
-}
+exports.find = find = function *(model, query, fields, options) {
+    var data = yield model.find(query, fields, options);
+    dbLog([model.modelName, 'find', query, fields, options]);
+    return data;
+};
 
 
 /**
  * findOneAndUpdate
  * @type {Function}
  */
-exports.findOneAndUpdate = findOneAndUpdate = function (model, query, update, options, callback) {
-    if ('function' == typeof options) {
-        callback = options;
-        options = null;
-    }
-    model.findOneAndUpdate(query, update, options, warpCallback(callback, [model.modelName, 'findOneAndUpdate', query, update, options]))
-}
+exports.findOneAndUpdate = findOneAndUpdate = function *(model, query, update, options) {
+    var data = yield model.findOneAndUpdate(query, update, options);
+    dbLog([model.modelName, 'findOneAndUpdate', query, update, options]);
+    return data;
+};
 
 /**
  * findByIdAndUpdate
  * @type {Function}
  */
-exports.findByIdAndUpdate = findByIdAndUpdate = function (model, id, update, options, callback) {
-    findOneAndUpdate(model, {_id: id}, update, options, callback)
-}
+exports.findByIdAndUpdate = findByIdAndUpdate = function *(model, id, update, options) {
+    return yield findOneAndUpdate(model, {_id: id}, update, options);
+};
 
 /**
  * findOneAndRemove
  * @type {Function}
  */
-exports.findOneAndRemove = findOneAndRemove = function (model, query, options, callback) {
-    if ('function' == typeof options) {
-        callback = options;
-        options = null;
-    }
-    model.findOneAndRemove(query, options, warpCallback(callback, [model.modelName, 'findOneAndRemove', query, options]))
-}
+exports.findOneAndRemove = findOneAndRemove = function *(model, query, options) {
+    var data = yield model.findOneAndRemove(query, options);
+    dbLog([model.modelName, 'findOneAndRemove', query, options]);
+    return data;
+};
 
 /**
  * remove
  * @type {Function}
  */
-exports.remove = remove = function (model, query, callback) {
-    model.remove(query, warpCallback(callback, [model.modelName, 'remove', query]))
-}
+exports.remove = remove = function *(model, query) {
+    var data = yield model.remove(query);
+    dbLog([model.modelName, 'remove', query]);
+    return data;
+};
 
 /**
  * save
  * @type {Function}
  */
-exports.save = save = function(model, document, callback){
+exports.save = save = function *(model, document, callback){
     document = document instanceof model ? document : new model(document);
-    document.save(warpCallback(callback, [model.modelName, 'save', document]))
-}
+    var data = yield document.save();
+    dbLog([model.modelName, 'save', document]);
+    return data;
+};
 
-exports.create = create = function(model, documents, callback){
-    model.create(documents, warpCallback(callback, [model.modelName, 'create', documents]))
-}
+/**
+ * create
+ * @type {Function}
+ */
+exports.create = create = function *(model, documents){
+    var data = yield model.create(documents);
+    dbLog([model.modelName, 'create', documents]);
+    return data;
+};
 
 /**
  * update
  * @type {Function}
  */
-exports.update = update = function (model, query, update, options, callback) {
-    if ('function' == typeof options) {
-        callback = options;
-        options = null;
-    }
-    model.update(query, update, options, warpCallback(callback, [model.modelName, 'update', query, update, options]))
-}
+exports.update = update = function *(model, query, update, options) {
+    var data = yield model.update(query, update, options);
+    dbLog([model.modelName, 'update', query, update, options]);
+    return data;
+};
 
 /**
  * aggregate
  * @type {Function}
  */
-exports.aggregate = aggregate = function (model, options, callback) {
-    model.aggregate(options,warpCallback(callback, [model.modelName, 'aggregate', options]))
-}
+exports.aggregate = aggregate = function *(model, options) {
+    var data = yield model.aggregate(options);
+    dbLog([model.modelName, 'aggregate', options]);
+    return data;
+};
 
 
-var warpCallback = function(callback, args){
-    var time = process.hrtime();
-    return function () {
-        var diff = process.hrtime(time);
-        var ms = diff[0] * 1e3 + diff[1] * 1e-6;
-        logger.info('[%sms] %s.%s(%s) %s %s', ms.toFixed(3), args[0], args[1], format(args[2]), format(args[3]), format(args[4]));
-        callback.apply(this, arguments);
-    }
-}
-
+/**
+ * 格式化
+ * @param obj
+ * @returns {*}
+ */
 var format = function format(obj){
     if(!obj) return '';
     return util.inspect(obj, false, 10, true).replace(/\n/g, '').replace(/\s{2,}/g, ' ');
-}
+};
+
+/**
+ * 打印mongodb操作日志
+ */
+var dbLog = function (args) {
+    var time = process.hrtime();
+    var diff = process.hrtime(time);
+    var ms = diff[0] * 1e3 + diff[1] * 1e-6;
+    logger.info('[%sms] %s.%s(%s) %s %s', ms.toFixed(3), args[0], args[1], format(args[2]), format(args[3]), format(args[4]));
+};

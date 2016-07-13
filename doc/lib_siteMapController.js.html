@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/siteMapController.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: lib/siteMapController.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module siteMap 网址地图
+ */
+'use strict';
+var config = require("../conf/config");
+var _ = require("underscore");
+var View = require("../application/View");
+var article = require('../model/article');
+var tag = require('../model/tag');
+var mongodbOperation = require("../application/mongodbOperation");
+var moment = require('moment');
+var logger = require('../logger').getLogger(module);
+var fs = require('fs');
+var sm = require('sitemap');
+var sitemap = sm.createSitemap({
+  hostname: config.portalUrl,
+  cacheTime: 600000,
+  urls: [
+    {url: config.portalUrl, changefreq: 'always', priority: 1, lastmod: moment().format('YYYY-MM-DD')},
+    {url: config.portalUrl + '/a', changefreq: 'daily', priority: 0.8, lastmod: moment().format('YYYY-MM-DD')},
+    {url: config.portalUrl + '/tech', changefreq: 'daily', priority: 0.8, lastmod: moment().format('YYYY-MM-DD')},
+    {url: config.portalUrl + '/life', changefreq: 'daily', priority: 0.8, lastmod: moment().format('YYYY-MM-DD')}
+  ]
+});
+
+/**
+ * 生成网站地图（sitemap）
+ * @param req
+ * @param res
+ * @returns {*|exports|module.exports}
+ */
+exports.createSiteMap = function *(req, res) {
+  let results = yield {
+    getArticles: function *() {
+      var query = {status: 'online', onlineTime: {$lte: new Date()}};
+      var options = {sort: {onlineTime: 'desc'}};
+      return yield mongodbOperation.find(article, query, 'order lastUpdateTime', options);
+    },
+    getTags: function *() {
+      return yield mongodbOperation.find(tag, {deleted: false}, 'enName', {sort: {hotScore: 'desc'}});
+    }
+  };
+  // 添加文章索引
+  _.each(results.getArticles, function (art) {
+    sitemap.del({url: config.portalUrl + '/a/' + art.order + '.html'}); // 删除重复
+    sitemap.add({
+      url: config.portalUrl + '/a/' + art.order + '.html',
+      lastmod: moment(art.lastUpdateTime).format('YYYY-MM-DD'),
+      changefreq: 'daily',
+      priority: 0.5
+    });
+  });
+  // 添加标签索引
+  _.each(results.getTags, function (tag) {
+    sitemap.del({url: config.portalUrl + '/tag/' + tag.enName}); // 删除重复
+    sitemap.add({
+      url: config.portalUrl + '/tag/' + tag.enName,
+      lastmod: moment().format('YYYY-MM-DD'),
+      changefreq: 'daily',
+      priority: 0.5
+    });
+  });
+  fs.writeFile('sitemap.xml', sitemap.toString(),  function(err) {
+    if (err) {
+      return console.error(err);
+    }
+  });
+};
+
+/**
+ * 获取并返回sitemap
+ * @param res
+ * @param req
+ */
+exports.sendSiteMap = function *(res, req) {
+  var data = fs.readFileSync("sitemap.xml", "utf-8");
+  this.set('Content-Type', 'application/xml'); // 必须加上，不然没格式
+  return new View('', data);
+};
+
+/**
+ * 生成robots.txt
+ * @param req
+ * @param res
+ */
+exports.sendRobot = function *(req, res) {
+  var data = fs.readFileSync("robots.txt", "utf-8");
+  this.set['Content-Type'] = 'text/plain'; // 必须加上，不然没格式（如文本换行）
+  return new View('', data);
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-article%2520%25E6%2596%2587%25E7%25AB%25A0.html">article 文章</a></li><li><a href="module-dataView%2520%25E6%2595%25B0%25E6%258D%25AE%25E5%258F%25AF%25E8%25A7%2586%25E5%258C%2596.html">dataView 数据可视化</a></li><li><a href="module-error%2520%25E9%2594%2599%25E8%25AF%25AF%25E9%25A1%25B5%25E9%259D%25A2.html">error 错误页面</a></li><li><a href="module-index%2520%25E9%25A6%2596%25E9%25A1%25B5.html">index 首页</a></li><li><a href="module-life%2520%25E7%2594%259F%25E6%25B4%25BB%25E6%259D%2582%25E8%25AE%25B0.html">life 生活杂记</a></li><li><a href="module-search%2520%25E6%2590%259C%25E7%25B4%25A2.html">search 搜索</a></li><li><a href="module-siteMap%2520%25E7%25BD%2591%25E5%259D%2580%25E5%259C%25B0%25E5%259B%25BE.html">siteMap 网址地图</a></li><li><a href="module-table.html">table</a></li><li><a href="module-tag%2520%25E6%25A0%2587%25E7%25AD%25BE.html">tag 标签</a></li><li><a href="module-tech%2520%25E6%258A%2580%25E6%259C%25AF.html">tech 技术</a></li><li><a href="module-wonderfulContent%2520%25E7%25B2%25BE%25E5%25BD%25A9%25E5%2586%2585%25E5%25AE%25B9.html">wonderfulContent 精彩内容</a></li></ul><h3>Classes</h3><ul><li><a href="Exception.html">Exception</a></li></ul><h3>Global</h3><ul><li><a href="global.html#exceptionsEnum">exceptionsEnum</a></li><li><a href="global.html#handleException">handleException</a></li><li><a href="global.html#throwException">throwException</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Jul 13 2016 16:22:40 GMT+0800 (中国标准时间)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

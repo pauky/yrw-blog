@@ -2,12 +2,17 @@
  * jade模板
  * @param name
  * @param data
+ * @param redirect
+ * @param resolved
  * @constructor
  */
-var View = function(name, data, redirect, resolved) {
-	this.name = name;
-	this.data = data;
+'use strict';
+class View {
+  constructor(name, data, redirect, resolved) {
+    this.name = name;
+    this.data = data;
     this.redirect = redirect;
     this.resolved =  resolved || false;
-};
+  }
+}
 module.exports = View;

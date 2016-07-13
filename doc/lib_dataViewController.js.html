@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/dataViewController.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: lib/dataViewController.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module dataView 数据可视化
+ */
+'use strict';
+var config = require("../conf/config");
+var _ = require("underscore");
+var moment = require('moment');
+var mongodbOperation = require("../application/mongodbOperation");
+var article = require('../model/article');
+var tag = require('../model/tag');
+var accountUser = require('../model/accountUser');
+var filter = require('../application/filter');
+var View = require("../application/View");
+
+/**
+ * POST: /api/countTagArticle 标签文章数量统计
+ * @param req
+ * @param res
+ * @returns {json}
+ */
+exports.countTagArticle = function *(req, res) {
+  let results = {};
+  results.getTags = yield function *() {
+    let query = {deleted: false};
+    return yield mongodbOperation.find(tag, query, '_id name enName');
+  };
+  if (results.getTags) {
+    results.getTagsArticles = yield function *() {
+      var tagIds = _.pluck(results.getTags, '_id');
+      if (_.size(tagIds) == 0) return;
+      return yield mongodbOperation.find(article, {tags: {$in: tagIds}, status: 'online'}, '_id tags');
+    };
+  }
+  if (results.getTagsArticles) {
+    let value = 0;
+    results.countTagArticle = _.map(results.getTags, function (tag) {
+      tag = tag.toJSON();
+      value = _.filter(results.getTagsArticles, function (item) {
+        return _.contains(item.tags, tag._id.toString() ? tag._id.toString() : null);
+      }).length;
+      return {
+        label: tag.name,
+        value: value
+      };
+    });
+  }
+
+  return results.countTagArticle;
+};
+
+/**
+ * POST: /api/countTypeArticle 类型文章数量统计
+ * @param req
+ * @param res
+ * @returns {*|exports|module.exports}
+ */
+exports.countTypeArticle = function *(req, res) {
+  let results = {};
+  results.getArticles = yield function *() {
+    let query = {status: 'online', $or: [{type: 'tech'}, {type: 'life'}]};
+    return yield mongodbOperation.find(article, query, '_id type');
+  };
+  if (results.getArticles) {
+    let typeArr = ['tech', 'life'];
+    let value = 0;
+    results.countTypeArticle = _.map(typeArr, function (type) {
+      value = _.filter(results.getArticles, function (item) {
+        return item.type === type;
+      }).length;
+      return {
+        label: type,
+        value: value
+      };
+    });
+  }
+  return results.countTypeArticle;
+};
+
+/**
+ * POST: /api/countMonthArticle 月份文章统计
+ * @param year 年份
+ * @param req
+ * @param res
+ * @returns {*|exports|module.exports}
+ */
+exports.countMonthArticle = function *(year, req, res) {
+  var years = ['2015'];
+  if (!year || !_.contains(years, year)) {
+    year = parseInt(moment().toDate().getFullYear(), 10); // 默认是今年
+  } else {
+    year = parseInt(year, 10);
+  }
+  let results = {};
+  if (!isNaN(year) &amp;&amp; typeof parseInt(year) === 'number') {
+    results.getArticles = yield function *() {
+      var query = {status: 'online', createTime: {$gte: new Date(year+'-1'), $lt: new Date((year+1)+'-1')}};
+      var options = {
+        sort: {createTime: 'desc'}
+      };
+      return yield mongodbOperation.find(article, query, '_id title createTime tags', options);
+    };
+  }
+  results.getTags = yield function *() {
+    let query = {deleted: false};
+    return yield mongodbOperation.find(tag, query, 'name enName');
+  };
+
+  let maxDate = null;
+  let minDate = null;
+  let data = [];
+  let articles = [];
+  let clusterJson = null;
+  let itemTagChild = null;
+  for (let m = 1; m &lt;= 12; m += 1) {
+    clusterJson = {name: config.siteName, children: []};
+    minDate = new Date(year+'-'+m+'-1');
+    maxDate = moment(new Date((m === 12 ? year+1 : year)+'-'+(m+1 &lt;= 12 ? m+1 : 1)+'-1')).subtract(1).toDate();
+    articles = [];
+    _.each(results.getArticles, function (item, i) {
+      if (item) {
+        if (minDate.getTime() &lt;= item.createTime.getTime() &amp;&amp; maxDate >= item.createTime.getTime()) {
+          articles.push(item);
+          return false;
+        }
+      }
+    });
+    _.each(results.getTags, function (tag) {
+      itemTagChild = {'name': tag.name, children: []};
+      _.each(articles, function (art) {
+        art = art.toJSON();
+        if (_.contains(art.tags, tag._id.toString())) {
+          art.name = art.title;
+          itemTagChild.children.push(art);
+        }
+      });
+      if (_.size(itemTagChild.children)) {
+        clusterJson.children.push(itemTagChild);
+      }
+    });
+    data.push({
+      month: m,
+      num: articles.length,
+      articles: articles,
+      clusterJson: clusterJson
+    });
+  };
+  return {
+    monthArticles: data,
+    year: {
+      all: years,
+      current: year
+    }
+  };
+
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-article%2520%25E6%2596%2587%25E7%25AB%25A0.html">article 文章</a></li><li><a href="module-dataView%2520%25E6%2595%25B0%25E6%258D%25AE%25E5%258F%25AF%25E8%25A7%2586%25E5%258C%2596.html">dataView 数据可视化</a></li><li><a href="module-error%2520%25E9%2594%2599%25E8%25AF%25AF%25E9%25A1%25B5%25E9%259D%25A2.html">error 错误页面</a></li><li><a href="module-index%2520%25E9%25A6%2596%25E9%25A1%25B5.html">index 首页</a></li><li><a href="module-life%2520%25E7%2594%259F%25E6%25B4%25BB%25E6%259D%2582%25E8%25AE%25B0.html">life 生活杂记</a></li><li><a href="module-search%2520%25E6%2590%259C%25E7%25B4%25A2.html">search 搜索</a></li><li><a href="module-siteMap%2520%25E7%25BD%2591%25E5%259D%2580%25E5%259C%25B0%25E5%259B%25BE.html">siteMap 网址地图</a></li><li><a href="module-table.html">table</a></li><li><a href="module-tag%2520%25E6%25A0%2587%25E7%25AD%25BE.html">tag 标签</a></li><li><a href="module-tech%2520%25E6%258A%2580%25E6%259C%25AF.html">tech 技术</a></li><li><a href="module-wonderfulContent%2520%25E7%25B2%25BE%25E5%25BD%25A9%25E5%2586%2585%25E5%25AE%25B9.html">wonderfulContent 精彩内容</a></li></ul><h3>Classes</h3><ul><li><a href="Exception.html">Exception</a></li></ul><h3>Global</h3><ul><li><a href="global.html#exceptionsEnum">exceptionsEnum</a></li><li><a href="global.html#handleException">handleException</a></li><li><a href="global.html#throwException">throwException</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Jul 13 2016 16:22:40 GMT+0800 (中国标准时间)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

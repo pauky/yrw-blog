@@ -1,60 +1,74 @@
+/**
+ * Author: pauky
+ * Date: 2016/3/23
+ * Verson: 0.1
+ */
+'use strict';
+var indexController = require('./lib/indexController');
 var articleController = require('./lib/articleController');
+var searchController = require('./lib/searchController');
 var techController = require('./lib/techController');
 var lifeController = require('./lib/lifeController');
-var indexController = require('./lib/indexController');
-var searchController = require('./lib/searchController');
-var errorController = require('./lib/errorController');
 var tagController = require('./lib/tagController');
-var siteMapController = require('./lib/siteMapController');
+var wonderfulContentController = require('./lib/wonderfulContentController');
 var dataViewController = require('./lib/dataViewController');
+var errorController = require('./lib/errorController');
+var siteMapController = require('./lib/siteMapController');
 
-/**
- * URL 规则
- * 如果url以RegExp字符串开始, 则会删除RegExp, 把剩余字符串当成正则
- * 正则(\d+), 应该写成(\\d+), 防止虚拟机转义
- * 如:
- * /^\/a\/([a-zA-Z0-9]+)(?:\-(\d+)-(\d+))?\.html$/im
- * 应该写成
- * /^\\/a\\/([a-zA-Z0-9]+)(?:\\-(\\d+)\-(\\d+))?\\.html$/im
- */
 exports.Routes = {
-    // pages
-    "/": indexController.index,       // 首页
+  // 首页
+  '/': [{handler:indexController.index, methods:['get']}],
 
-    // 所有文章页面
-    '/a(?:\/:pageNum(\\d+)-:pageSize(\\d+))?': articleController.all,
+  // 文章详情页
+  '/a/:order.html': [{handler:articleController.detail, methods:['get']}],
 
-    // 文章详情页
-    '/a/:order([a-zA-Z0-9]+).html': articleController.detail,
+  // 所有文章页面
+  '/a/:pageNum(\\d+)?(-)?:pageSize(\\d+)?': [{
+    handler: articleController.all,
+    methods: ['get']
+  }],
 
-    // 同步搜索
-    '/search(?:\/:keyword)?(?:\/:pageNum(\\d+))?(?:-:pageSize(\\d+))?': searchController.search,
-    // 异步搜索
-    '/partials/search': searchController.search,
+  // 同步搜索
+  '/search/:keyword?/:pageNum(\\d+)?(-)?:pageSize(\\d+)?': [{
+    handler:searchController.search,
+    methods: ['get']
+  }],
 
-    // 技术
-    '/tech(?:\/:pageNum(\\d+)-:pageSize(\\d+))?': techController.list,
+  // 异步搜索
+  '/partials/search': [{handler:searchController.search, methods: ['post']}],
 
-    // 生活杂记
-    '/life(?:\/:pageNum(\\d+)-:pageSize(\\d+))?': lifeController.list,
+  // 技术
+  '/tech/:pageNum(\\d+)?(-)?:pageSize(\\d+)?': [{
+    handler: techController.list,
+    methods: ['get']
+  }],
 
-    // 标签页
-    '/tag/:enName([a-zA-Z0-9]+)(?:\/:pageNum(\\d+)-:pageSize(\\d+))?': tagController.detail,
+  // 生活杂记
+  '/life/:pageNum(\\d+)?(-)?:pageSize(\\d+)?': [{
+    handler: lifeController.list,
+    methods: ['get']
+  }],
 
-    // 精彩内容（示例）
-    '/demo/data-view.html': dataViewController.index, // 数据视图
+  // 标签页
+  '/tag/:enName/:pageNum(\\d+)?(-)?:pageSize(\\d+)?': [{
+    handler: tagController.detail,
+    methods: ['get']
+  }],
 
-    // 异步接口
-    '/api/countTagArticle': dataViewController.countTagArticle, // 标签文章数量统计
-    '/api/countTypeArticle': dataViewController.countTypeArticle, // 类型文章数量统计
-    '/api/countMonthArticle': dataViewController.countMonthArticle, // 月份文章数量统计
+  // 精彩内容（示例）
+  '/demo/data-view.html': [{handler: wonderfulContentController.dataView, methods: ['get']}], // 数据视图
 
-    // error page
-    '/err/404.html': errorController.error404,
-    '/err/500.html': errorController.error500,
+  // 异步接口
+  '/api/countTagArticle': [{handler: dataViewController.countTagArticle, methods: ['post']}], // 标签文章数量统计
+  '/api/countTypeArticle': [{handler: dataViewController.countTypeArticle, methods: ['post']}], // 类型文章数量统计
+  '/api/countMonthArticle': [{handler: dataViewController.countMonthArticle, methods: ['post']}], // 月份文章数量统计
 
-    // 网站地图
-    '/sitemap.xml': siteMapController.sendSiteMap,
-    '/robots.txt': siteMapController.sendRobot
+  // error page
+  '/err/404.html': [{handler: errorController.error404, methods: ['get']}],
+  '/err/500.html': [{handler: errorController.error500, methods: ['get']}],
+
+  // 网站地图
+  '/sitemap.xml': [{handler: siteMapController.sendSiteMap, methods: ['get']}],
+  '/robots.txt': [{handler: siteMapController.sendRobot, methods: ['get']}]
 
 };

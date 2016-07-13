@@ -6,11 +6,9 @@
 
 /* import */
 var View = require('./View');
-var Promise = require("promise");
 var config = require("../conf/config");
 var _ = require("underscore");
-var Exception = require('./Exception');
-var errorController = require('../lib/errorController');
+var exception = require('./Exception');
 var logger = require('../logger').getLogger(module);
 /* exports */
 var app_util = {};
@@ -28,15 +26,15 @@ app_util.formatResult = function (result) {
         result: result || null
     };
     return result;
-}
+};
 
 app_util.formatErrorResult = function (err) {
-    var e = {}
+    var e = {};
     e.error = true;
     e.msg = err.toString();
     e.errorCode = 0; //not login code
     return e;
-}
+};
 
 /**
  * common handler,作用是将http method参数解析出来，然后调用真正的普通的js function
@@ -45,7 +43,8 @@ app_util.formatErrorResult = function (err) {
  * @param next
  * @param handleFn
  */
-app_util.commonHandler = function (req, res, next, handleFn) {
+app_util.commonHandler = function *(req, res, next, handleFn) {
+    var _self = this;
     var funcParamNames = app_util.getFuncParamNames(handleFn);
     var funcParamVals = [];
     if (funcParamNames) {
@@ -54,70 +53,76 @@ app_util.commonHandler = function (req, res, next, handleFn) {
                 funcParamVals.push(req);
             } else if (paramName === 'res') {
                 funcParamVals.push(res);
+            } else if (paramName === 'next') {
+                funcParamVals.push(next);
+            } else if (paramName === 'ctx') {
+                funcParamVals.push(_self);
             } else {
-                var paramVal = app_util.getValueFromRequest(req, paramName);
+                var paramVal = app_util.getValueFromRequest(_self, paramName);
                 funcParamVals.push(paramVal);
             }
         });
     }
 
-    var result;
+    let result;
     try {
-        result = handleFn.apply(this, funcParamVals);
-    } catch (err) {
-        return app_util.sendError(err, req, res);
+        result = yield* handleFn.apply(_self, funcParamVals);
+        app_util.sendSuccess(result, _self);
+    } catch(err) {
+        return app_util.sendError(err, _self);
     }
-    if (result instanceof Promise) { // is promise object
-        result.then(function (data) {
-            app_util.sendSuccess(data, req, res);
-        }, function (err) {
-            app_util.sendError(err, req, res);
-        });
-    } else if (result instanceof Error){ // is common object or Error object
-        app_util.sendError(result, req, res);
-    } else if (result){
-        app_util.sendSuccess(result, req, res);
-    } else {
-        // handler return null.Nothing need to do !
-    }
-}
 
-app_util.sendError = function (err, req, res) {
-    var params = req.params || {};
-    var body = req.body || {};
-    var query = req.query || {};
-    var requestText = 'REQUEST: params: ' + JSON.stringify(params) + ' body: ' + JSON.stringify(body) + ' query: ' + JSON.stringify(query)
-    if(err instanceof Exception.ApplicationException){
-        logger.error(JSON.stringify(err), req.url, requestText);
+};
+
+/**
+ * 错误时返回
+ * @param err
+ * @param ctx
+ */
+app_util.sendError = function (err, ctx) {
+    if (err instanceof exception.Exception) {
+        // 处理异常
+        exception.handleException(err, ctx);
     } else {
-        logger.error(err, req.url, requestText)
-    }
-    if(req.xhr){//异步
-        if(err instanceof Exception.ApplicationException){
-            return res.send(err);
+        // 处理错误
+        if (config.ENV !== 'prd') {
+            // 方便调试
+            logger.error(ctx.method, ctx.url, err);
+            if(ctx.req.xhr){//异步
+                ctx.response.body = app_util.formatErrorResult(err);
+            } else {
+                ctx.redirect('/err/500.html');
+            }
+        } else {
+            throw err;
         }
-        res.send(app_util.formatErrorResult(err));
-    } else {//同步请求
-        errorController.error500Callback(req, res, function(view){
-            console.log(view);
-            res.render(view.name, view.data);
-        });
     }
-}
+};
 
-app_util.sendSuccess = function (result, req, res) {
+/**
+ * 成功时返回
+ * @param result
+ * @param ctx
+ */
+app_util.sendSuccess = function (result, ctx) {
     if (result instanceof View) {
         if(result.redirect){
-            res.redirect(result.redirect)
+            ctx.redirect(result.redirect)
         }else if(result.resolved){//已经处理完response
 //            res.send(result));
         } else {
-            res.render(result.name, result.data);
+            if (result.name) {
+                ctx.render(result.name, result.data);
+            } else {
+                // 没有模板路径，则直接返回数据
+                ctx.response.body = result.data;
+            }
         }
     } else {
-        res.send(app_util.formatResult(result));
+        ctx.response.body = app_util.formatResult(result);
     }
-}
+};
+
 /*========== util methods ==================================================*/
 
 /**
@@ -143,7 +148,7 @@ app_util.toCamel = function (str) {
     return str.replace(/([\-_][a-zA-Z])/g, function ($1) {
         return $1.toUpperCase().replace(/[\-_]/g, '');
     });
-}
+};
 
 /**
  * 从req获取参数, params-->body-->query
@@ -154,10 +159,10 @@ app_util.toCamel = function (str) {
  */
 app_util.getValueFromRequest = function(req, name, defaultValue){
     var params = req.params || {};
-    var body = req.body || {};
+    var body = req.request.body || {};
     var query = req.query || {};
     if (null != params[name] && params.hasOwnProperty(name)) return params[name];
     if (null != body[name]) return body[name];
     if (null != query[name]) return query[name];
     return defaultValue;
-}
+};

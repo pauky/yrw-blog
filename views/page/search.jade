@@ -6,7 +6,7 @@ block head
   meta(name="description", content="找东东")
   link(rel="stylesheet",href="#{staticDomain}/css/search.css")
   script.
-    window.params = {keyword: "#{keyword || ''}", pageNum: "#{pageNum}", pageSize: "#{pageSize}", total: "#{articles.total}"};
+    window.params = {keyword: "#{keyword || ''}", pageNum: #{pageNum}, pageSize: "#{pageSize}", total: "#{articles.total}"};
 block body
   .container
     .header
