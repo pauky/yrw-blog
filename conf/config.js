@@ -9,13 +9,14 @@ var node_env = nconf.get('NODE_ENV') || 'dev';
 
 var config = {
   prd: {
-
+    // 生产环境配置
   },
   sit: {
-
+    // 测试环境配置
   },
 
   dev: {
+    // 本地开发环境配置
     siteName: '行之足',
     mongo: {
       connectionStr: "mongodb://blog:abc123@127.0.0.1:27017/blog?autoReconnect=true&bufferMaxEntries=0"
