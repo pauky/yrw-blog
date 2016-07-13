@@ -20,7 +20,6 @@ var config = {
     siteName: '行之足',
     mongo: {
       connectionStr: "mongodb://blog:abc123@127.0.0.1:27017/blog?autoReconnect=true&bufferMaxEntries=0"
-      //connectionStr: "mongodb://blog:abc123@192.168.1.101:27017/blog?autoReconnect=true&bufferMaxEntries=0"
     },
     portalUrl: "http://127.0.0.1:3100",
     portalDomain: "127.0.0.1",
