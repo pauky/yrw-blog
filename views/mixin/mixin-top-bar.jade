@@ -1,0 +1,22 @@
+//- 页面头部
+mixin topBar(type, hiddenSearch, className)
+  .mixin-top-bar(class=className)
+    .ui.pointing.menu
+      a.item(href=portalUrl, class=type==='index' ? 'active' : '')
+        | 首页
+      a.item(href=portalUrl+'/tech', class=type==='tech' ? 'active' : '')
+        | 技术
+      a.item(href=portalUrl+'/life', class=type==='life' ? 'active' : '')
+        | 生活杂记
+      a.item.menu-icon
+        i.sidebar.icon
+      .right.menu
+        //-.item
+          //- 用户头像
+          img.avatar(src="http://semantic-ui.com/images/avatar/small/joe.jpg")
+        .item(class=hiddenSearch ? 'hidden' : '')
+          .ui.transparent.icon.input
+            input.search-input(type="text", placeholder="Search...")
+            i.search.link.icon.search-icon
+    //- m站侧栏
+    .m-side-bar

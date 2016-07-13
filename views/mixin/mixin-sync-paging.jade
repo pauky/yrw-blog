@@ -1,0 +1,49 @@
+//- 分页（同步）组件
+//- eg: +pagination(4,19,7)
+//- current - 当前页码
+//- totalPage - 页码总数
+//- pageSize - 每页显示的条数
+//- partUrl - url拼接字符串
+//- showSize - 需要展示的页码数量
+//- @param className 自定义样式类
+mixin syncPaging(current, totalPage, pageSize, partUrl, showSize, className)
+  if current <= totalPage
+    - var makePartUrl = function (pageNum, pageSize) {
+    -   return partUrl.replace('pageNum', pageNum).replace('pageSize', pageSize);
+    - }
+    - current = parseInt(current, 10), totalPage = parseInt(totalPage, 10), showSize = parseInt(showSize || 7, 10)
+    - var arr = [], start = 0;
+    - var showSizeHalf = Math.floor(showSize/2); // 需要展示页数的一半
+    if showSize < totalPage
+      //- 当前页数是否大于需要展示页数的一半
+      if current > showSizeHalf
+        //- 剩下的页数是否大于需要展示页数的一半
+        if totalPage - current >= showSizeHalf
+          - start = current - showSizeHalf;
+        else
+          - start = current - (showSize - (totalPage - current)) + 1;
+      else
+        - start = 1;
+    else
+      - start = 1;
+    - showSize = showSize > totalPage ? totalPage : showSize;
+    - for(var i = 0; i < showSize; i += 1) {
+    -   arr.push(start + i);
+    - }
+    - var _prev = current > 1 && current <= totalPage ? makePartUrl(Math.max(current - 1, 1), pageSize) :"javascript:;";
+    - var _next = current > 0 && current < totalPage ? makePartUrl(Math.min(current + 1, totalPage), pageSize) : "javascript:;";
+    .mixin-paging(class=className)
+      if arr.length && totalPage > 1
+        - var activeClass = '', _skip;
+        .paging.t-c
+          .ui.buttons.white
+            a.ui.circular.icon.button(href=_prev)
+              i.left.chevron.icon
+            each item,i in arr
+              - activeClass = '';
+              - _skip = Math.max(item, 1);
+              a.ui.circular.button(
+              class=current === _skip? 'blue': '',
+              href=makePartUrl(_skip, pageSize))= item
+            a.ui.circular.icon.button(href=_next)
+              i.right.chevron.icon

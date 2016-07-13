@@ -1,0 +1,21 @@
+extends ../common/layout
+block title
+  title 500 | 行之足
+block head
+  meta(name="keywords", content="行之足, 500")
+  meta(name="description", content="500 | 服务器错误")
+  link(rel="stylesheet",href="#{staticDomain}/css/500.css")
+block body
+  .container
+    .header
+      +topBar('')
+    .body.t-c
+      h1.title
+        p.error-code 500
+        p 服务器错误
+      a(href=portalUrl) 返回首页>
+    .footer
+      +footer()
+block scripts
+  script(src=staticDomain+"/js/500.js")
+                                       

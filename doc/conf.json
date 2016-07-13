@@ -1,0 +1,23 @@
+{
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": [
+      "jsdoc",
+      "closure"
+    ]
+  },
+  "source": {
+    "include": ["lib", "model", "application/Exception.js"],
+    "exclude": []
+  },
+  "plugins": ["plugins/markdown"],
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false
+  },
+  "opts": {
+    "encoding": "utf8",               // same as -e utf8
+    "destination": "./doc/",          // same as -d ./out/
+    "recurse": true                  // same as -r
+  }
+}

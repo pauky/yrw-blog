@@ -1,0 +1,11 @@
+//- 分页（异步）组件
+//- @param className 自定义样式类
+mixin asyncPaging(pageNum, className)
+  .mixin-paging(class=className)
+    .paging.t-c
+      .ui.buttons.white
+        span.ui.icon.button.pre-page
+          i.left.chevron.icon
+        span.ui.page.button= pageNum
+        span.ui.icon.button.next-page
+          i.right.chevron.icon

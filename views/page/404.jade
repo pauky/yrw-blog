@@ -1,0 +1,21 @@
+extends ../common/layout
+block title
+  title 404 | 行之足
+block head
+  meta(name="keywords", content="行之足, 404")
+  meta(name="description", content="404 | 页面不存在")
+  link(rel="stylesheet",href="#{staticDomain}/css/500.css")
+block body
+  .container
+    .header
+      +topBar('')
+    .body.t-c
+      h1.title
+        p.error-code 404
+        p 您访问的页面不存在！
+      a(href=portalUrl) 返回首页>
+    .footer
+      +footer()
+block scripts
+  script(src=staticDomain+"/js/500.js")
+                                       

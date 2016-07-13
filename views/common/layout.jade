@@ -1,0 +1,41 @@
+doctype html
+html(lang='zh-cmn-Hans')
+  head
+    meta( charset="utf-8")
+    //-meta( name="viewport", content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui")
+    meta( name="viewport", content="width=device-width, user-scalable=no")
+    meta( name="apple-mobile-web-app-capable", content="yes")
+    meta( name="apple-mobile-web-app-status-bar-style", content="black")
+    meta( name="theme-color", content="#000000" )
+    meta(name='mobile-web-app-capable', content='yes')
+    //-meta(name="applicable-device" content="pc")
+    meta(name="author", content="杨润炜")
+    block head
+    link( rel="shortcut icon", type="image/x-icon", href="#{staticDomain}/favicon.ico")
+    block title
+    include ../common/mixin
+    include ../common/header-script
+  body
+    .ui.inverted.labeled.icon.left.inline.vertical.sidebar.menu
+      a.item(href=portalUrl)
+        i.home.icon
+        | 首页
+      a.item(href=portalUrl+'/tech')
+        i.block.layout.icon
+        | 技术
+      a.item(href=portalUrl+'/life')
+        i.smile.icon
+        | 生活杂记
+      a.item(href=portalUrl+'/search')
+        i.search.icon
+        | 搜索
+    .pusher
+      block body
+
+    //- dev or prd
+    | <!--[if lt IE 9]>
+    script(src="#{portalUrl}/blog/1450073127077/node_modules/es5-shim/es5-shim.min.js")
+    script(src="#{portalUrl}/blog/1450073127077/node_modules/json3/lib/json3.min.js")
+    | <![endif]-->
+
+    block scripts

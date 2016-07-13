@@ -1,0 +1,43 @@
+extends ../common/layout
+block title
+  title 首页 | 行之足
+block head
+  <meta name="baidu-site-verification" content="a2ZjRiOO1U" />
+  <meta name="google-site-verification" content="dykjOL8YGa5aHBfx522ohHIjbb1FWUo9IM0u9lyuIpA" />
+  meta(name="keywords", content="杨润炜的个人博客, 行之足")
+  meta(name="description", content="关注技术，积累点滴；品尝生活，享受乐趣")
+  link(rel="stylesheet",href="#{staticDomain}/css/index.css")
+block body
+  .container
+    .header
+      +topBar('index')
+    .body
+      //- banner
+      +banner('千里之行，始于足下')
+      .main-wrapper.ui.grid
+        .wrapper-left.twelve.wide.column
+          //- articles list
+          +articlesList(articles)
+          .show-all
+            a.all-art-link(href=portalUrl+'/a') 查看更多>
+        .wrapper-right.four.wide.column
+          //- side
+          .index-side
+            //- 精彩内容
+            .woderful-content
+              .title.t-c 精彩内容
+              ul.w-c-list
+                li.item-cont
+                  a.link(href=portalUrl+'/demo/data-view.html') 行之足数据可视化视图
+            if _.size(hotArticles)
+              .hot-articles
+                .title.t-c 热门文章
+                ul.hot-articles-list
+                  each art in hotArticles
+                    li.item-art
+                      a.link(href=portalUrl+'/a/'+art.order+'.html') #{art.title}
+    .footer
+      +footer()
+block scripts
+  script(src=staticDomain+"/js/index.js")
+                                       

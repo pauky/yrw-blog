@@ -1,0 +1,40 @@
+extends ../common/layout
+block title
+  title 技术 | 行之足
+block head
+  meta(name="keywords", content="杨润炜的技术分享, 行之足")
+  meta(name="description", content="关注技术，积累点滴")
+  link(rel="stylesheet",href="#{staticDomain}/css/index.css")
+block body
+  .container
+    .header
+      +topBar('tech')
+    .body
+      //- banner
+      +banner('关注技术，积累点滴')
+      .main-wrapper.ui.grid
+        .wrapper-left.twelve.wide.column
+          //- articles list
+          +articlesList(articles)
+          +syncPaging(
+          pageNum,
+          Math.ceil(articles.total/pageSize),
+          pageSize,
+          portalUrl + "/tech/pageNum-pageSize",
+          9)
+
+        .wrapper-right.four.wide.column
+          //- side
+          .index-side
+            if _.size(hotArticles)
+              .hot-articles
+                .title.t-c 热门文章(技术)
+                ul.hot-articles-list
+                  each art in hotArticles
+                    li.item-art
+                      a.link(href=portalUrl+'/a/'+art.order+'.html') #{art.title}
+    .footer
+      +footer()
+block scripts
+  script(src=staticDomain+"/js/index.js")
+                                       

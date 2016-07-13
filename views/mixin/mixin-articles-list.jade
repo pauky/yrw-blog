@@ -1,0 +1,13 @@
+//- 文章列表
+mixin articlesList(articles, className)
+  .mixin-articles-list
+    if articles && _.size(articles.data)
+      each art in  articles.data
+        a.item-article(href=portalUrl+"/a/"+ art.order +".html", target="_blank")
+          h2.title #{art.title}
+          .subtitle #{art.subtitle}
+          .others-info.ui.grid
+            .comment-num.eight.wide.column
+              span.comment-title 浏览数:
+              span.num= art.hotScore
+            .time.t-r.eight.wide.column #{filter.fmtDateTime(art.createTime, "yyyy/M/d/ hh:mm")}

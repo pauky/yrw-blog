@@ -1,0 +1,33 @@
+extends ../common/layout
+block title
+  title 搜索页 | 行之足
+block head
+  meta(name="keywords", content="搜索页, 行之足")
+  meta(name="description", content="找东东")
+  link(rel="stylesheet",href="#{staticDomain}/css/search.css")
+  script.
+    window.params = {keyword: "#{keyword || ''}", pageNum: "#{pageNum}", pageSize: "#{pageSize}", total: "#{articles.total}"};
+block body
+  .container
+    .header
+      +topBar('', true)
+    .body
+      .search-options
+        .ui.search
+          .ui.icon.input.search-input
+            input.prompt(type="text", placeholder="Search...", value="#{keyword || ''}")
+            i.search.icon-bar.search-icon
+      .search-res
+        +loading()
+        .loading-shade
+        //- articles list
+        .article-list
+          +articlesList(articles)
+      .res-paging
+        +asyncPaging(pageNum)
+
+    .footer
+      +footer()
+block scripts
+  script(src=staticDomain+"/js/search.js")
+                                       

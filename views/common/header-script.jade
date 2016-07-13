@@ -1,0 +1,30 @@
+//- header-scripts()
+if config.ENV === 'prd'
+  script.
+   // 百度统计
+   var _hmt = _hmt || [];
+     (function() {
+     var hm = document.createElement("script");
+     hm.src = "//hm.baidu.com/hm.js?d60b0a59e2ab9d19d2726d7e54b97ec0";
+     var s = document.getElementsByTagName("script")[0];
+     s.parentNode.insertBefore(hm, s);
+   })();
+
+   // 百度自动推送
+//   (function(){
+//     var bp = document.createElement('script');
+//     bp.src = '//push.zhanzhang.baidu.com/push.js';
+//     var s = document.getElementsByTagName("script")[0];
+//     s.parentNode.insertBefore(bp, s);
+//   })();
+
+script.
+ //- 公共全局变量
+ window.staticDomain = "#{staticDomain}";
+ window.jsDomain = "#{jsDomain}";
+ window.portalUrl = '#{portalUrl}';
+
+ // iframe嵌套
+ if(!~window.top.location.host.indexOf('#{portalDomain}')){
+   window.top.location.host = '#{portalDomain}'
+ }

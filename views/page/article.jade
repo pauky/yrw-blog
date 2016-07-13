@@ -1,0 +1,127 @@
+extends ../common/layout
+block title
+  title #{article.title} | 行之足
+block head
+  meta(name="keywords", content="#{article.title}, 行之足, #{_.pluck(article.tagInfo, 'name').join(',')}")
+  meta(name="description", content="#{article.subtitle} | 行之足")
+  link(rel="stylesheet",href="#{staticDomain}/css/article.css")
+block body
+  //图片延迟加载
+  - var reg = new RegExp('<img(.*?) src=(.*?)(.*?)>', "gmi");
+  - var imgUrlReg = new RegExp('http://img.yangrunwei.com', 'gmi');
+  - var headLine = article.content.match(reg) && article.content.match(reg)[0];
+  - var authorName = article.authorInfo ? article.authorInfo.name : '';
+  - article.content = article.content.replace(reg,'<img$1 data-original=$2 $3 data-lazy="true" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC">');
+  - article.content = article.content.replace(imgUrlReg, 'https://img.yangrunwei.com');
+
+
+  .container
+    .header
+      +topBar()
+    .body
+      .article-wrapper
+        h1.title.t-c #{article.title}
+        .author-and-time.clear-fix
+          .author.f-l #{authorName ? '作者：'+authorName : ''}
+          .time.f-r.t-r 日期：#{filter.fmtDateTime(article.createTime, "yyyy/M/d hh:mm")}
+        //- 文章标签
+        if _.size(article.tagInfo)
+          .article-tags
+            each tag in article.tagInfo
+              a.ui.tag.label.mini(href=portalUrl+'/tag/'+tag.enName) #{tag.name}
+        .content.markdown-body.editormd-preview-container !{article.content}
+      .remark
+        p
+          | 感谢您的阅读！
+          br
+          | 如果看完后有任何疑问，欢迎拍砖。
+          br
+          | 欢迎转载，转载请注明出处：http://www.yangrunwei.com/a/#{article.order}.html
+          br
+          | 邮箱：
+          a(href="mailto:glowrypauky@gmail.com") glowrypauky@gmail.com
+          br
+          | QQ: 892413924
+      .next-and-pre.ui.grid
+        if preArticle
+          .next-art.eight.wide.column
+            span.t 上一篇：
+            a.art-link(href=portalUrl+'/a/'+preArticle.order+'.html', title="#{preArticle.title}")
+              span.art-title #{preArticle.title}
+        if nextArticle
+          .pre-art.eight.wide.column.t-r
+            span.t 下一篇：
+            a.art-link(href=portalUrl+'/a/'+nextArticle.order+'.html', title="#{nextArticle.title}")
+              span.art-title #{nextArticle.title}
+      //-.comment-wrapper
+        .ui.comments
+          .comment
+            a.avatar
+              img(src="http://semantic-ui.com/images/avatar/small/joe.jpg")
+            .content
+              a.author Joe Henderson
+              .metadata
+                .date 1 day ago
+              .text
+                p
+                  | The hours, minutes and seconds stand as visible reminders that your effort put them all there.
+                p
+                  | Preserve until your next run, when the watch lets you see how Impermanent your efforts are.
+              .actions
+                a.reply Reply
+          .comment
+            a.avatar
+              img(src="http://semantic-ui.com/images/avatar/small/joe.jpg")
+            .content
+              a.author Christian Rocha
+              .metadata
+                .date 2 days ago
+              .text
+                | I re-tweeted this.
+              .actions
+                a.reply Reply
+          form.ui.reply.form
+            .field
+              textarea
+            .ui.primary.submit.labeled.icon.button
+              i.icon.edit
+              | Add Comment
+
+    +footer()
+block scripts
+  script(src=staticDomain+"/js/article.js")
+  //- baidu share
+  //-script.
+    window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"slide":{"type":"slide","bdImg":"0","bdPos":"right","bdTop":"105.5"},"image":{"viewList":["weixin","fbook","twi","qzone","tsina","renren","bdysc"],"viewText":"分享到：","viewSize":"16"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["weixin","fbook","twi","qzone","tsina","renren","bdysc"]}};
+    with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+  //- 结构化数据
+  script(type="application/ld+json").
+    {
+      "@context": "http://schema.org",
+      "@type": "NewsArticle",
+      "mainEntityOfPage":{
+        "@type":"WebPage",
+        "@id":"#{portalUrl+'/a/'+article.order+'.html'}"
+      },
+      "headline": "#{article.title}",
+      "image": {
+        "@type": "ImageObject",
+        "url": "#{headLine}",
+        "width": 640
+      },
+      "datePublished": "#{article.onlineTime}",
+      "author": {
+        "@type": "Person",
+        "name": "#{authorName}"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "#{authorName}",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "",
+          "width": 600
+        }
+      },
+      "description": "#{article.subtitle}"
+    }

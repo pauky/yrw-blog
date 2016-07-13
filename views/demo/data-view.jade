@@ -1,0 +1,28 @@
+extends ../common/layout
+block title
+  title 数据可视化 | 行之足
+block head
+  meta(name="keywords", content="数据可视化, 行之足")
+  meta(name="description", content="数据可视化 | 行之足数据可视化视图")
+  link(rel="stylesheet",href="#{staticDomain}/css/data-view.css")
+block body
+  .container
+    .header
+      +topBar('')
+    .body.t-c
+      h1.title 行之足数据可视化视图
+      //- 类型文章饼图
+      #typeArticlePie
+      //- 标签饼图
+      #tagPie
+
+      //- 月份文章数量柱状图
+      #monthArticleHistogram
+
+      //- 集群图
+      #clusterDiagram
+    .footer
+      +footer()
+block scripts
+  script(src=staticDomain+"/js/data-view.js")
+                                       

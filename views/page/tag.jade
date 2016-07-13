@@ -1,0 +1,40 @@
+extends ../common/layout
+block title
+  title #{tag.name} | 行之足
+block head
+  meta(name="keywords", content="#{tag.name}")
+  meta(name="description", content="#{tag.description}")
+  link(rel="stylesheet",href="#{staticDomain}/css/tag.css")
+block body
+  .container
+    .header
+      +topBar()
+    .body
+      //- banner
+      +banner(tag.description)
+      .main-wrapper.ui.grid
+        .wrapper-left.twelve.wide.column
+          //- articles list
+          +articlesList(articles)
+          +syncPaging(
+          pageNum,
+          Math.ceil(articles.total/pageSize),
+          pageSize,
+          portalUrl + "/tag/"+tag.enName+"/pageNum-pageSize",
+          9)
+
+        .wrapper-right.four.wide.column
+          //- side
+          .tag-side
+            if _.size(hotTags)
+              .hot-tag
+                .title.t-c 热门标签
+                ul.hot-tag-list
+                  each tag in hotTags
+                    li.item-tag
+                      a.link(href=portalUrl+'/tag/'+tag.enName) #{tag.name}
+    .footer
+      +footer()
+block scripts
+  script(src=staticDomain+"/js/tag.js")
+                                       
