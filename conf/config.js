@@ -25,7 +25,7 @@ var config = {
     portalDomain: "127.0.0.1",
     cookieDomain: "127.0.0.1",
     staticDomain: "http://127.0.0.1:3100/blog/",
-    staticRoot: 'D:/pauky/work/yrw-portal-static',// 静态资源路径,个人本地路径(办公室)
+    staticRoot: 'D:/pauky/work/yrw-portal-static',// 静态资源路径,个人本地路径
     bindIp: "0.0.0.0",
     httpPort: 3100,
     email: {
