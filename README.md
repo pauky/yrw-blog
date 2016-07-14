@@ -21,5 +21,15 @@ $ node blog-portal-koa-server.js
 ```
 访问[localhost:3100](http://localhost:3100)
 
+## 生成文档
+全局安装jsdoc
+```
+$ npm install jsdoc -g
+```
+根据conf.json生成相应文档
+```
+$ jsdoc -c doc/conf.json
+```
+
 ## 项目线上地址
 [yangrunwei.com](http://www.yangrunwei.com)
