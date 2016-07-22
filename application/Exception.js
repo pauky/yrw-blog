@@ -109,7 +109,7 @@ var exceptionsEnum = {
  * @param options
  */
 function throwException(exception, options) {
-    if (typeof exception === 'string') {
+    if (typeof exception === 'string' && exceptionsEnum[exception]) {
         exception = exceptionsEnum[exception];
     }
     if (!exception) throw new Error('unkown Exception for type: ' + exception);
