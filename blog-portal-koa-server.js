@@ -24,7 +24,7 @@ var co = require('co');
 var exception = require("./application/Exception");
 var db = require('./module/mongo');
 
-app.proxy = true; // 设置相信http中headers的X-Forwarded-For信息
+app.proxy = true; // 设置一些proxy header 参数会被加到信任列表中
 
 // 解析body数据
 app.use(bodyParser());
