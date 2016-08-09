@@ -37,7 +37,7 @@ let jade = new Jade({
   debug: false,
   pretty: false,
   compileDebug: false,
-  //locals: global_locals_for_all_pages,
+  noCache: config.ENV === 'dev', // 是否开启jade缓存
   basedir: __dirname + '/views',
   app: app // equals to jade.use(app) and app.use(jade.middleware)
 });
