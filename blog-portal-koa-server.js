@@ -167,3 +167,8 @@ co(function *() {
     logger.error(err);
   }
 });
+
+// listen uncaughtException
+process.on('uncaughtException', function (err) {
+  console.trace(err)
+});
