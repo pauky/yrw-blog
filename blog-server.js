@@ -105,4 +105,9 @@ async.auto({
   }
 );
 
+// listen uncaughtException
+process.on('uncaughtException', function (err) {
+    console.trace(err)
+});
+
 module.exports = app;
